@@ -19,5 +19,20 @@
         <file>gui/NavigableDialog.qml</file>
         <file>gui/CenteredGridView.qml</file>
         <file>gui/CliPair.qml</file>
+        <file>gui/play/PlayWindow.qml</file>
+        <file>gui/play/HomePage.qml</file>
+        <file>gui/play/LibraryPage.qml</file>
+        <file>gui/play/SearchPage.qml</file>
+        <file>gui/play/SettingsPage.qml</file>
+        <file>gui/play/GamePage.qml</file>
+        <file>gui/play/IdentifyPage.qml</file>
+        <file>gui/play/ArtPage.qml</file>
+        <file>gui/play/LaunchPage.qml</file>
+        <file>gui/play/Osk.qml</file>
+        <file>gui/play/ButtonGlyph.qml</file>
+        <file>gui/play/HintBar.qml</file>
+        <file>gui/play/GameArt.qml</file>
+        <file>gui/play/FocusRing.qml</file>
+        <file>gui/play/PillButton.qml</file>
     </qresource>
 </RCC>

@@ -54,6 +54,10 @@
 #include "streaming/session.h"
 #include "settings/streamingpreferences.h"
 #include "gui/sdlgamepadkeynavigation.h"
+#include "play/playbackend.h"
+#include "play/playinput.h"
+
+#include <QFontDatabase>
 
 #if defined(Q_OS_WIN32)
 #define IS_UNSPECIFIED_HANDLE(x) ((x) == INVALID_HANDLE_VALUE || (x) == NULL)
@@ -1032,7 +1036,20 @@ int main(int argc, char *argv[])
         }
     }
 
-    if (hasGUI) {
+    if (hasGUI && commandLineParserResult == GlobalCommandLineParser::NormalStartRequested && qgetenv("DOT_PLAY_CLASSIC").isEmpty()) {
+        // Dot Play: its own launcher instead of Moonlight's PC and app grids. The command line
+        // (pair, stream, quit, list) keeps Moonlight's own screens; Dot uses them.
+        QFontDatabase::addApplicationFont(":/res/fonts/Geist.ttf");
+        StreamingPreferences* preferences = StreamingPreferences::get(&engine);
+        auto input = new PlayInput(preferences, &app);
+        auto play = new PlayBackend(new ComputerManager(preferences), preferences, input, &app);
+        engine.rootContext()->setContextProperty("Play", play);
+        engine.rootContext()->setContextProperty("PlayInput", input);
+        engine.load(QUrl(QStringLiteral("qrc:/gui/play/PlayWindow.qml")));
+        if (engine.rootObjects().isEmpty())
+            return -1;
+    }
+    else if (hasGUI) {
         engine.rootContext()->setContextProperty("initialView", initialView);
         engine.rootContext()->setContextProperty("runConfigChecks", commandLineParserResult == GlobalCommandLineParser::NormalStartRequested);
 
