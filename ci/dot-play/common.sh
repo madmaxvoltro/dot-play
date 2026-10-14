@@ -5,10 +5,13 @@ set -euo pipefail
 export DEBIAN_FRONTEND=noninteractive
 
 apt-get update -qq
-apt-get install -y -qq --no-install-recommends ca-certificates curl gnupg xz-utils zstd file > /dev/null
-curl -fsSL https://archive.raspberrypi.com/debian/raspberrypi.gpg.key | gpg --dearmor -o /usr/share/keyrings/raspberrypi.gpg
-echo "deb [signed-by=/usr/share/keyrings/raspberrypi.gpg] http://archive.raspberrypi.com/debian trixie main" \
-  > /etc/apt/sources.list.d/raspi.list
+apt-get install -y -qq --no-install-recommends ca-certificates curl xz-utils zstd file > /dev/null
+# the keyring package Raspberry Pi OS itself uses (the old raspberrypi.gpg.key is SHA-1 bound, which apt refuses)
+curl -fsSL -o /tmp/rpi-keyring.deb \
+  https://archive.raspberrypi.com/debian/pool/main/r/raspberrypi-archive-keyring/raspberrypi-archive-keyring_2025.1+rpt1_all.deb
+dpkg -i /tmp/rpi-keyring.deb > /dev/null
+KEYRING=$(dpkg -L raspberrypi-archive-keyring | grep -E '^/usr/share/keyrings/.*[.](pgp|gpg)$' | head -1)
+echo "deb [signed-by=$KEYRING] http://archive.raspberrypi.com/debian trixie main" > /etc/apt/sources.list.d/raspi.list
 apt-get update -qq
 
 # what Qt itself is built against (and links to at run time on the Pi)
