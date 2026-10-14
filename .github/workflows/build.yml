@@ -3,11 +3,10 @@ name: Build
 permissions:
   contents: read
 
+# Upstream Moonlight's builds (AppImage, Steam Link, Windows, macOS). Dot Play builds in dot-play.yml;
+# these only run by hand.
 on:
-  push:
-  pull_request:
-    branches:
-      - master
+  workflow_dispatch:
 
 concurrency:
   group: build-${{ github.ref }}

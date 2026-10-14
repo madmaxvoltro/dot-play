@@ -2,7 +2,7 @@ QT += core quick network quickcontrols2 svg
 CONFIG += c++17
 
 unix:!macx {
-    TARGET = moonlight
+    TARGET = dot-play
 } else {
     # On macOS, this is the name displayed in the global menu bar
     TARGET = Moonlight

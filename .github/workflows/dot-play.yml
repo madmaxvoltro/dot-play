@@ -1,0 +1,95 @@
+---
+# Dot Play for the Raspberry Pi (arm64, Raspberry Pi OS / Debian Trixie).
+#
+#   qt:     builds Qt (the latest release) once into /opt/dot/play and keeps it as a release asset
+#           (tag qt-<version>), so later builds reuse it instead of spending hours on Qt again.
+#   build:  builds Dot Play against that Qt and publishes one bundle, dot-play-arm64.tar.zst, under the
+#           rolling "nightly" release. Dot's installer unpacks it into /opt/dot/play.
+#
+# Runs in a Debian Trixie container on GitHub's arm64 runners, with Raspberry Pi's own apt repository
+# for its FFmpeg (hardware decoding through V4L2).
+name: Dot Play (Raspberry Pi)
+permissions:
+  contents: write
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+concurrency:
+  group: dot-play-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  QT_VERSION: "6.12.0"
+  PREFIX: /opt/dot/play
+  QT_MODULES: qtbase qtshadertools qtdeclarative qtsvg qtwayland qtimageformats
+
+jobs:
+  qt:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 360
+    steps:
+      - name: Already built?
+        id: have
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "qt-$QT_VERSION" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "built=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "built=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout
+        if: steps.have.outputs.built == 'false'
+        uses: actions/checkout@v4
+
+      - name: Build Qt ${{ env.QT_VERSION }} in Debian Trixie
+        if: steps.have.outputs.built == 'false'
+        run: |
+          docker run --rm -v "$PWD:/src" -w /src \
+            -e QT_VERSION -e PREFIX -e QT_MODULES \
+            debian:trixie bash ci/dot-play/build-qt.sh
+
+      - name: Publish Qt
+        if: steps.have.outputs.built == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "qt-$QT_VERSION" out/qt-*.tar.zst --repo "$GITHUB_REPOSITORY" \
+            --title "Qt $QT_VERSION for Dot Play (Trixie arm64)" \
+            --notes "Built by CI for the Dot Play bundle. Not meant to be installed by itself." --prerelease
+
+  build:
+    needs: qt
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 120
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Fetch Qt
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p out
+          gh release download "qt-$QT_VERSION" --repo "$GITHUB_REPOSITORY" --dir out
+
+      - name: Build Dot Play in Debian Trixie
+        run: |
+          docker run --rm -v "$PWD:/src" -w /src \
+            -e QT_VERSION -e PREFIX -e GITHUB_SHA \
+            debian:trixie bash ci/dot-play/build-app.sh
+
+      - name: Publish nightly
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete nightly --repo "$GITHUB_REPOSITORY" --yes --cleanup-tag 2>/dev/null || true
+          gh release create nightly out/dot-play-arm64.tar.zst out/dot-play-arm64.deps --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" --title "Dot Play nightly" --prerelease \
+            --notes "Built from ${GITHUB_SHA::7}. Installed by Dot: sudo dot update"

@@ -1,3 +1,18 @@
+# Dot Play
+
+The game launcher and streaming client of [Dot](https://github.com/madmaxvoltro/dotos), the Raspberry Pi thin client. A fork of [Moonlight PC](https://github.com/moonlight-stream/moonlight-qt): Moonlight's streaming, with a launcher built for a TV and a controller.
+
+- One library of the games on every paired Sunshine / Apollo PC, with art and details from IGDB and SteamGridDB
+- Search by name and tag, recommendations from what you play
+- Controller-first (button hints match your controller), equally at home with a keyboard and mouse
+- Stream profiles per game, and an in-game overlay (Guide, or L1+R1+Select+Start, or Ctrl+Alt+Shift+Q)
+
+Built for the Raspberry Pi (arm64, Raspberry Pi OS Trixie) by [`.github/workflows/dot-play.yml`](.github/workflows/dot-play.yml), with the latest Qt, and installed by Dot into `/opt/dot/play`. Licensed GPL-3.0, like Moonlight.
+
+---
+
+The original Moonlight README follows.
+
 # Moonlight PC
 
 [Moonlight PC](https://moonlight-stream.org) is an open source PC client for NVIDIA GameStream and [Sunshine](https://github.com/LizardByte/Sunshine).
