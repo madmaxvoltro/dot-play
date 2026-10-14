@@ -75,6 +75,7 @@ class Play(QObject):
     changed = Signal()
     identifyResults = Signal("QVariantList")
     artResults = Signal(str, "QVariantList")
+    launchRequested = Signal(str)
 
     def __init__(self, empty=False):
         super().__init__()

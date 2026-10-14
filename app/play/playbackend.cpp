@@ -49,6 +49,7 @@ PlayBackend::PlayBackend(ComputerManager* computers, StreamingPreferences* prefs
     connect(m_Meta, &PlayMeta::changed, this, &PlayBackend::scheduleRebuild);
     connect(&m_BoxArt, &BoxArtManager::boxArtLoadComplete, this, &PlayBackend::handleBoxArt);
 
+    m_PendingLaunch = qEnvironmentVariable("DOT_PLAY_GAME");
     m_Computers->startPolling();
     rebuild();
 }
@@ -247,6 +248,14 @@ void PlayBackend::rebuild()
     m_Rows = buildRows();
     m_Meta->lookUpMissing(lookups);
     emit changed();
+
+    if (!m_PendingLaunch.isEmpty()) {
+        QString key = keyForName(m_PendingLaunch);
+        if (!key.isEmpty() && game(key).value("online").toBool()) {
+            m_PendingLaunch.clear();
+            emit launchRequested(key);
+        }
+    }
 }
 
 QJsonObject PlayBackend::profileFor(const QString& key) const

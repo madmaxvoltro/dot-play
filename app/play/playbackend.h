@@ -143,4 +143,7 @@ private:
     QString m_StreamKey;
     qint64 m_StreamStart = 0;
     QVariantMap m_SavedPrefs;
+
+    // DOT_PLAY_GAME=<name>: start this game as soon as its PC lists it (Game.exe "Elden Ring")
+    QString m_PendingLaunch;
 };

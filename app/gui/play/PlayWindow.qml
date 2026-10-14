@@ -231,6 +231,12 @@ ApplicationWindow {
 
     property var shellItem: null
 
+    // Dot asked for one game (Game.exe "Elden Ring")
+    Connections {
+        target: Play
+        function onLaunchRequested(key) { stack.launch(Play.game(key)) }
+    }
+
     Component { id: gamePageComponent; GamePage {} }
     Component { id: launchPageComponent; LaunchPage {} }
     Component { id: identifyPageComponent; IdentifyPage {} }
