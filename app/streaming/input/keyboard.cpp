@@ -27,13 +27,15 @@ void SdlInputHandler::performSpecialKeyCombo(KeyCombo combo)
     switch (combo) {
     case KeyComboQuit:
         SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION,
-                    "Detected quit key combo");
+                    "Detected menu key combo");
 
-        // Push a quit event to the main loop
-        SDL_Event event;
-        event.type = SDL_QUIT;
-        event.quit.timestamp = SDL_GetTicks();
-        SDL_PushEvent(&event);
+        // Ctrl+Alt+Shift+Q: Dot Play's in-game menu (Moonlight quits here)
+        {
+            SDL_Event event;
+            event.type = SDL_USEREVENT;
+            event.user.code = SDL_CODE_PLAY_MENU;
+            SDL_PushEvent(&event);
+        }
         break;
 
     case KeyComboUngrabInput:

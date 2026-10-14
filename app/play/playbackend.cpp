@@ -4,6 +4,7 @@
 #include "playmeta.h"
 
 #include "settings/streamingpreferences.h"
+#include "streaming/playmenu.h"
 #include "streaming/session.h"
 
 #include <QClipboard>
@@ -695,6 +696,18 @@ void PlayBackend::streamEnded(const QString& key)
     m_StreamStart = 0;
     m_StreamKey.clear();
     m_Computers->startPolling();
+
+    // what the in-game menu asked for
+    PlayMenu::ExitAction action = PlayMenu::takeExitAction();
+    if (action == PlayMenu::ExitStopGame) {
+        const Source* source = sourceFor(key);
+        if (source != nullptr) {
+            m_Computers->quitRunningApp(source->computer);
+        }
+    }
+    else if (action == PlayMenu::ExitBackToWork) {
+        QTimer::singleShot(300, this, &PlayBackend::backToDot);
+    }
 }
 
 QString PlayBackend::clipboard() const

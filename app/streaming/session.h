@@ -10,6 +10,10 @@
 #include "video/decoder.h"
 #include "audio/renderers/renderer.h"
 #include "video/overlaymanager.h"
+#include "playmenu.h"
+
+// Dot Play's in-game menu: Guide, Start+Select+L1+R1 or Ctrl+Alt+Shift+Q (see playmenu.h)
+#define SDL_CODE_PLAY_MENU 120
 
 class SupportedVideoFormatList : public QList<int>
 {
@@ -94,6 +98,7 @@ class Session : public QObject
     Q_OBJECT
 
     friend class SdlInputHandler;
+    friend class PlayMenu;
     friend class DeferredSessionCleanupTask;
     friend class AsyncConnectionStartThread;
 
@@ -281,6 +286,7 @@ private:
     Uint32 m_DropAudioEndTime;
 
     Overlay::OverlayManager m_OverlayManager;
+    PlayMenu m_PlayMenu;  // after the overlay manager: its fonts close before TTF does
 
     static CONNECTION_LISTENER_CALLBACKS k_ConnCallbacks;
     static Session* s_ActiveSession;

@@ -134,6 +134,11 @@ public:
 
     void raiseAllKeys();
 
+    // Dot Play's menu: let go of every controller button and stick in the game, switch mouse mode
+    void releaseGamepads();
+    void toggleMouseMode() { performSpecialKeyCombo(KeyComboToggleMouseMode); }
+    bool isAbsoluteMouseMode() const { return m_AbsoluteMouseMode; }
+
     void notifyMouseLeave();
 
     void notifyFocusLost();

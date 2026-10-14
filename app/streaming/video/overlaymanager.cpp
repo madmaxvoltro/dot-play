@@ -116,9 +116,41 @@ void OverlayManager::setOverlayRenderer(IOverlayRenderer* renderer)
     m_Renderer = renderer;
 }
 
+void OverlayManager::setMenu(std::function<SDL_Surface*()> render, bool statsAfter)
+{
+    m_Menu = render;
+    if (render) {
+        // keep the stats text coming (the menu shows it) while the menu is drawn in its place
+        m_Overlays[OverlayDebug].enabled = true;
+    }
+    else {
+        m_Overlays[OverlayDebug].enabled = statsAfter;
+        if (!statsAfter) {
+            m_Overlays[OverlayDebug].text[0] = 0;
+        }
+    }
+    notifyOverlayUpdated(OverlayDebug);
+}
+
+void OverlayManager::refreshMenu()
+{
+    if (m_Menu) {
+        notifyOverlayUpdated(OverlayDebug);
+    }
+}
+
 void OverlayManager::notifyOverlayUpdated(OverlayType type)
 {
     if (m_Renderer == nullptr) {
+        return;
+    }
+
+    if (type == OverlayDebug && m_Menu) {
+        SDL_Surface* old = (SDL_Surface*)SDL_AtomicSetPtr((void**)&m_Overlays[type].surface, m_Menu());
+        m_Renderer->notifyOverlayUpdated(type);
+        if (old != nullptr) {
+            SDL_FreeSurface(old);
+        }
         return;
     }
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QString>
+#include <functional>
 
 #include "SDL_compat.h"
 #include <SDL_ttf.h>
@@ -39,6 +40,11 @@ public:
 
     void setOverlayRenderer(IOverlayRenderer* renderer);
 
+    // Dot Play's in-game menu: drawn in the stats overlay's place while it's open (render != nullptr).
+    // statsAfter: whether the stats overlay is on once the menu closes.
+    void setMenu(std::function<SDL_Surface*()> render, bool statsAfter = false);
+    void refreshMenu();
+
 private:
     void notifyOverlayUpdated(OverlayType type);
     SDL_Surface* RenderTextOutlinedWrapped(TTF_Font* font, const char* text, SDL_Color textColor, SDL_Color outlineColor, int outlineWidth, int wrapWidth);
@@ -53,6 +59,7 @@ private:
         SDL_Surface* surface;
     } m_Overlays[OverlayMax];
     IOverlayRenderer* m_Renderer;
+    std::function<SDL_Surface*()> m_Menu;
     QByteArray m_FontData;
 };
 

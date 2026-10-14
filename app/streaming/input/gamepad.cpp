@@ -52,6 +52,20 @@ SdlInputHandler::findStateForGamepad(SDL_JoystickID id)
     return nullptr;
 }
 
+void SdlInputHandler::releaseGamepads()
+{
+    for (int i = 0; i < MAX_GAMEPADS; i++) {
+        GamepadState* state = &m_GamepadState[i];
+        if (state->controller == nullptr) {
+            continue;
+        }
+        state->buttons = 0;
+        state->lsX = state->lsY = state->rsX = state->rsY = 0;
+        state->lt = state->rt = 0;
+        LiSendMultiControllerEvent(state->index, m_GamepadMask, 0, 0, 0, 0, 0, 0, 0);
+    }
+}
+
 void SdlInputHandler::sendGamepadState(GamepadState* state)
 {
     SDL_assert(m_GamepadMask == 0x1 || m_MultiController);
@@ -305,6 +319,17 @@ void SdlInputHandler::handleControllerButtonEvent(SDL_ControllerButtonEvent* eve
         }
     }
 
+    // Guide opens Dot Play's in-game menu instead of going to the PC
+    if (event->button == SDL_CONTROLLER_BUTTON_GUIDE && qgetenv("DOT_PLAY_GUIDE_TO_PC") != "1") {
+        if (event->state == SDL_PRESSED) {
+            SDL_Event menu;
+            menu.type = SDL_USEREVENT;
+            menu.user.code = SDL_CODE_PLAY_MENU;
+            SDL_PushEvent(&menu);
+        }
+        return;
+    }
+
     if (event->state == SDL_PRESSED) {
         state->buttons |= k_ButtonMap[event->button];
 
@@ -385,16 +410,16 @@ void SdlInputHandler::handleControllerButtonEvent(SDL_ControllerButtonEvent* eve
         }
     }
 
-    // Handle Start+Select+L1+R1 as a gamepad quit combo
+    // Start+Select+L1+R1: Dot Play's in-game menu (Moonlight quits here)
     if (state->buttons == (PLAY_FLAG | BACK_FLAG | LB_FLAG | RB_FLAG) && qgetenv("NO_GAMEPAD_QUIT") != "1") {
         SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION,
-                    "Detected quit gamepad button combo");
+                    "Detected menu gamepad button combo");
 
-        // Push a quit event to the main loop
         SDL_Event event;
-        event.type = SDL_QUIT;
-        event.quit.timestamp = SDL_GetTicks();
+        event.type = SDL_USEREVENT;
+        event.user.code = SDL_CODE_PLAY_MENU;
         SDL_PushEvent(&event);
+        state->buttons = 0;
 
         // Clear buttons down on this gamepad
         LiSendMultiControllerEvent(state->index, m_GamepadMask,

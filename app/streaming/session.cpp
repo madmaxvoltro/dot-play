@@ -584,7 +584,8 @@ Session::Session(NvComputer* computer, NvApp& app, StreamingPreferences *prefere
       m_OpusDecoder(nullptr),
       m_AudioRenderer(nullptr),
       m_AudioSampleCount(0),
-      m_DropAudioEndTime(0)
+      m_DropAudioEndTime(0),
+      m_PlayMenu(this)
 {
 }
 
@@ -1995,6 +1996,11 @@ void Session::exec()
             continue;
         }
 #endif
+        // Dot Play's menu takes every press while it's open
+        if (m_PlayMenu.handleEvent(event)) {
+            continue;
+        }
+
         switch (event.type) {
         case SDL_QUIT:
             SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION,
@@ -2031,6 +2037,10 @@ void Session::exec()
                                                  (uint8_t)((uintptr_t)event.user.data2 >> 16),
                                                  (uint8_t)((uintptr_t)event.user.data2 >> 8),
                                                  (uint8_t)((uintptr_t)event.user.data2));
+                break;
+            case SDL_CODE_PLAY_MENU:
+                if (m_PlayMenu.isOpen()) m_PlayMenu.close();
+                else m_PlayMenu.open();
                 break;
             case SDL_CODE_GAMECONTROLLER_SET_ADAPTIVE_TRIGGERS:
                 m_InputHandler->setAdaptiveTriggers((uint16_t)(uintptr_t)event.user.data1,
