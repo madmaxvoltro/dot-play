@@ -207,7 +207,8 @@ SOURCES += \
     wm.cpp \
     play/playinput.cpp \
     play/playmeta.cpp \
-    play/playbackend.cpp \n    streaming/playmenu.cpp
+    play/playbackend.cpp \
+    streaming/playmenu.cpp
 
 HEADERS += \
     SDL_compat.h \
@@ -247,7 +248,8 @@ HEADERS += \
     backend/systemproperties.h \
     play/playinput.h \
     play/playmeta.h \
-    play/playbackend.h \n    streaming/playmenu.h
+    play/playbackend.h \
+    streaming/playmenu.h
 
 # Platform-specific renderers and decoders
 ffmpeg {
