@@ -24,8 +24,9 @@ find bin -type f ! -name dot-play -delete
 
 # run-time packages, from every ELF file's libraries outside the bundle
 find "$PREFIX" -type f \( -name '*.so*' -o -path '*/bin/*' \) -exec file {} + | grep -F ELF | cut -d: -f1 \
-  | xargs ldd 2>/dev/null | awk '/=> \// {print $3}' | grep -v "^$PREFIX" | sort -u \
-  | xargs -r dpkg -S 2>/dev/null | cut -d: -f1 | sort -u > /src/out/dot-play-arm64.deps
+  | { xargs ldd 2>/dev/null || true; } | awk '/=> \// {print $3}' | grep -v "^$PREFIX" \
+  | xargs -r realpath | sort -u \
+  | { xargs -r dpkg -S 2>/dev/null || true; } | cut -d: -f1 | sort -u > /src/out/dot-play-arm64.deps
 echo "run-time packages:"; cat /src/out/dot-play-arm64.deps
 
 echo "${GITHUB_SHA:-local}" > "$PREFIX/BUILD"
